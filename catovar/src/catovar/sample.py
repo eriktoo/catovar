@@ -16,7 +16,8 @@ class Sample:
         self.info_fields = info_fields
         self.info_dict = info_dict
         self.variant_fields = []
-        self.variants = {}
+        self.variant_list = []
+        self.anno_dict = {}
 
         # !!! Add filename checking!
         
@@ -24,25 +25,26 @@ class Sample:
         with open(self.info_dict['filename'], 'rb') as variant_file:
             variant_dict_reader = csv.DictReader(variant_file)
             self.variant_fields = variant_dict_reader.fieldnames
-            # Store dict describing each variant in variants{}, keyed by tuple of first 5 values
+            # Store dict describing each variant in anno_dict{}, keyed by tuple of first 5 values
             for variant in variant_dict_reader:
                 key_list = []
                 for index in self.variant_fields[0:5]:
                     key_list.append(variant[index])
                 key = tuple(key_list)
-                self.variants[key] = variant
+                self.anno_dict[key] = variant
+                self.variant_list.append(key)
 
     def get_anno(self, variant):
         anno_list = []
         for key in self.variant_fields:
-            anno_list.append(self.variants[variant][key])
+            anno_list.append(self.anno_dict[variant][key])
         return anno_list
 
     def get_variant_fields(self):
         return self.variant_fields
 
-    def get_variants(self):
-        return self.variants.keys()
+    def get_variant_list(self):
+        return self.variant_list
 
     def get_info_fields(self):
         return self.info_fields

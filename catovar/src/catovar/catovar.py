@@ -10,7 +10,7 @@ import sample
 import sys
 
 # Define variables
-samples = {}
+samples = []
 
 # Read in sample definitions, create sample instances, and store in samples[]
 with open(sys.argv[1]) as def_file:
@@ -18,8 +18,11 @@ with open(sys.argv[1]) as def_file:
     info_fields = dictreader.fieldnames
     for row in dictreader:
         new_sample = sample.Sample(info_fields, row)
-        new_sample_id = new_sample.info_dict["ident"]
-        samples[new_sample_id] = new_sample
+        samples.append(new_sample)
+
+for sample in samples:
+    for variant in sample.get_variant_list():
+        print ",".join(sample.get_info() + sample.get_anno(variant))
 
 # global_variants = {}
 # met_variants = []
@@ -61,10 +64,10 @@ with open(sys.argv[1]) as def_file:
 
 # Various print calls to test output
 
-#for variant in global_variants:
-#    for sample in global_variants[variant]:
-#        print(samples[sample].get_info())
-#        print(samples[sample].get_anno(variant))
+# for variant in global_variants:
+#     for sample in global_variants[variant]:
+#         print(samples[sample].get_info())
+#         print(samples[sample].get_anno(variant))
             
 #print("GLOBAL VARIANTS")
 #print set(global_variants)
