@@ -20,10 +20,13 @@ with open(sys.argv[1]) as def_file:
         new_sample = sample.Sample(info_fields, row)
         samples.append(new_sample)
 
-for sample in samples:
-    for variant in sample.get_variant_list():
-        print ",".join(sample.get_info() + sample.get_anno(variant))
-
+with open("combined_table.csv", 'wb') as out_csv:
+    writer = csv.writer(out_csv, dialect='excel')
+    writer.writerow(samples[0].get_info_fields() + samples[0].get_variant_fields())
+    for sample in samples:
+        for variant in sample.get_variant_list():
+            writer.writerow(sample.get_info() + sample.get_anno(variant))
+            
 # global_variants = {}
 # met_variants = []
 # nomet_variants = []
