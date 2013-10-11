@@ -37,6 +37,8 @@ class Sample:
                 # the info as a list at the end of the anno list.
                 variant["Otherinfo"] = variant["Otherinfo"].split('\t')
                 self.anno_dict[key] = variant
+                # Keep a list of all the variants present in a  sample, in the
+                # order they appear in the multianno file: ascending chr, pos
                 self.variant_list.append(key)
 
     def get_info(self):
@@ -62,7 +64,8 @@ class Sample:
     
     # return dictionary containing vcf info contained in the last 2 fields
     def get_vcf_info(self, variant):
-        return dict(zip(self.anno_dict[variant]["Otherinfo"][-2].split(":"), self.anno_dict[variant]["Otherinfo"][-1].split(":")))
+        return dict(zip(self.anno_dict[variant]["Otherinfo"][-2].split(":"), \
+                        self.anno_dict[variant]["Otherinfo"][-1].split(":")))
     
     # return annotation list excluding --otherinfo
     def get_anno(self, variant):

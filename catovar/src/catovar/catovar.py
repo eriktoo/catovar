@@ -62,7 +62,7 @@ with open("combined_table.csv", 'wb') as out_csv:
 # # Define global list of variables, and variable lists for sample types
 # for ident in samples:
 #     sample = samples[ident]
-#     variants = sample.get_variants()
+#     variants = sample.get_variant_list()
 # 
 #     for variant in variants:
 #         if variant in global_variants:
