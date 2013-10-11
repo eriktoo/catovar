@@ -19,13 +19,34 @@ with open(sys.argv[1]) as def_file:
     for row in dictreader:
         new_sample = sample.Sample(info_fields, row)
         samples.append(new_sample)
+        
+# Construct a header list for CSV output
+anno_fields = samples[0].get_variant_fields()[0:5]
+anno_fields.extend(["Zyg", "GQ", "Freq", "Alt", "Ref", "Depth"])
+anno_fields.extend(samples[0].get_variant_fields()[5:])
+header = samples[0].get_info_fields() + anno_fields
+
+data = [] # list to hold lists of variant data
+for sample in samples:
+    for variant in sample.get_variant_list():
+        v_data = [] # initialize list to line of data for variant
+        other = sample.get_vcf_info(variant) # get dict holding GT:GQ:DP... (vcf form)
+        v_data.extend(sample.get_info()) # get sample information
+        v_data.extend(sample.get_anno(variant)[0:5]) # get first 5 anno fields
+        v_data.append(sample.get_zyg(variant)) # insert zyg, qual, and coverage
+        v_data.append(sample.get_gq(variant))
+        v_data.append("FREQ") # to do: mutation frequency
+        v_data.append(other["FAO"])
+        v_data.append(other["FRO"])
+        v_data.append(other["FDP"])
+        v_data.extend(sample.get_anno(variant)[5:]) # get remaining annotation
+        data.append(v_data)
 
 with open("combined_table.csv", 'wb') as out_csv:
     writer = csv.writer(out_csv, dialect='excel')
-    writer.writerow(samples[0].get_info_fields() + samples[0].get_variant_fields())
-    for sample in samples:
-        for variant in sample.get_variant_list():
-            writer.writerow(sample.get_info() + sample.get_anno(variant))
+    writer.writerow(header)
+    for row in data:
+        writer.writerow(row)
             
 # global_variants = {}
 # met_variants = []
