@@ -35,7 +35,12 @@ for sample in samples:
         v_data.extend(sample.get_anno(variant)[0:5]) # get first 5 anno fields
         v_data.append(sample.get_zyg(variant)) # insert zyg, qual, and coverage
         v_data.append(sample.get_gq(variant))
-        v_data.append("FREQ") # to do: mutation frequency
+        fao = other["FAO"].split(",")
+        fao_int = 0
+        for n in fao:
+            fao_int += int(n)
+        freq = fao_int / float(other["FDP"])
+        v_data.append(str(freq)) # to do: mutation frequency
         v_data.append(other["FAO"])
         v_data.append(other["FRO"])
         v_data.append(other["FDP"])
