@@ -22,7 +22,7 @@ with open(sys.argv[1]) as def_file:
         
 # Construct a header list for CSV output
 anno_fields = samples[0].get_variant_fields()[0:5]
-anno_fields.extend(["Zyg", "GQ", "Freq", "Alt", "Ref", "Depth"])
+anno_fields.extend(["Zyg", "GQ", "Freq", "Alt", "% Alt+", "% Alt-", "Ref", "Depth"])
 anno_fields.extend(samples[0].get_variant_fields()[5:])
 header = samples[0].get_info_fields() + anno_fields
 
@@ -35,13 +35,32 @@ for sample in samples:
         v_data.extend(sample.get_anno(variant)[0:5]) # get first 5 anno fields
         v_data.append(sample.get_zyg(variant)) # insert zyg, qual, and coverage
         v_data.append(sample.get_gq(variant))
+        
+        # caculate mutation frequency
         fao = other["FAO"].split(",")
         fao_int = 0
         for n in fao:
             fao_int += int(n)
         freq = fao_int / float(other["FDP"])
-        v_data.append(str(freq)) # to do: mutation frequency
+        v_data.append(str(freq))
         v_data.append(other["FAO"])
+        
+        # calculate % of alt reads on + strand
+        fsaf = other["FSAF"].split(",")
+        fsaf_int = 0
+        for n in fsaf:
+            fsaf_int += int(n)
+        fsaf_freq = fsaf_int / float(fao_int)
+        v_data.append(str(fsaf_freq))
+        
+        # calculate % of alt reads on - strand
+        fsar = other["FSAR"].split(",")
+        fsar_int = 0
+        for n in fsar:
+            fsar_int += int(n)
+        fsar_freq = fsar_int / float(fao_int)
+        v_data.append(str(fsar_freq))
+        
         v_data.append(other["FRO"])
         v_data.append(other["FDP"])
         v_data.extend(sample.get_anno(variant)[5:]) # get remaining annotation
