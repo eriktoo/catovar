@@ -1,9 +1,9 @@
+#!/usr/bin/python
 '''
 Created on Oct 6, 2013
 
 @author: fuzz
 '''
-#!/usr/bin/python
 
 import csv
 import sample
