@@ -84,23 +84,25 @@ with open("combined_table.csv", 'wb') as out_csv:
     for row in data:
         writer.writerow(row)
             
-# global_variants = {}
-# met_variants = []
-# nomet_variants = []
-# monosomy_variants = []
-# disomy_variants = []
-# 
-# # Define global list of variables, and variable lists for sample types
-# for ident in samples:
-#     sample = samples[ident]
-#     variants = sample.get_variant_list()
-# 
-#     for variant in variants:
-#         if variant in global_variants:
-#             global_variants[variant].append(ident)
-#         else:
-#             global_variants[variant] = [ident]
-# 
+global_variants = {}
+global_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
+
+met_variants = []
+nomet_variants = []
+monosomy_variants = []
+disomy_variants = []
+ 
+# Define global variant lookup table
+for sample in samples:
+    variants = sample.get_variant_list()
+
+    for variant in variants:
+        if variant in global_variants:
+            continue
+        else:
+            anno = sample.get_anno(variant)
+            
+
 #     met_status = sample.info_dict["metast"]
 #     somy_status = sample.info_dict["somy"]
 # 
