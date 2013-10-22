@@ -9,6 +9,16 @@ import csv
 import sample
 import sys
 
+# Define functions
+
+# Write list 'data' into csv called 'filename' with fields from 'header'
+def output(filename, header, data):
+    with open(filename, 'wb') as out_csv:
+        writer = csv.writer(out_csv, dialect='excel')
+        writer.writerow(header)
+        for row in data:
+            writer.writerow(row)
+
 # Define variables
 samples = []
 
@@ -78,17 +88,13 @@ for sample in samples:
         v_data.extend(sample.get_anno(variant)[5:]) # get remaining annotation
         data.append(v_data)
 
-with open("combined_table.csv", 'wb') as out_csv:
-    writer = csv.writer(out_csv, dialect='excel')
-    writer.writerow(header)
-    for row in data:
-        writer.writerow(row)
+output("combined.csv", header, data)
             
 global_variants = {}
-global_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
+global_anno_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
 
-met_variants = []
-nomet_variants = []
+mets_variants = []
+nomets_variants = []
 monosomy_variants = []
 disomy_variants = []
  
@@ -100,49 +106,62 @@ for sample in samples:
         if variant in global_variants:
             continue
         else:
-            anno = sample.get_anno(variant)
+            anno = sample.get_anno_dict(variant)
+            global_anno = []
+            for field in global_anno_fields:
+                global_anno.append(anno[field])
+            global_variants[variant] = global_anno
             
+# Get sample metastasis and somy status 
+    met_status = sample.get_mets()
+    somy_status = sample.get_somy()
 
-#     met_status = sample.info_dict["metast"]
-#     somy_status = sample.info_dict["somy"]
-# 
-#     if met_status == "mets":
-#         met_variants.extend(variants)
-#     elif met_status == "nomets":
-#         nomet_variants.extend(variants)
-#     else:
-#         print("Error: illegal metastasis value.")
-# 
-#     if somy_status == "monosomy":
-#         monosomy_variants.extend(variants)
-#     elif somy_status == "disomy":
-#         disomy_variants.extend(variants)
-#     else:
-#         print("Error: illegal somy value.")
+    if met_status == "mets":
+        mets_variants.extend(variants)
+    elif met_status == "nomets":
+        nomets_variants.extend(variants)
+    else:
+        continue
+ 
+    if somy_status == "monosomy":
+        monosomy_variants.extend(variants)
+    elif somy_status == "disomy":
+        disomy_variants.extend(variants)
+    else:
+        continue
 
-# fieldnames = 
-# with open('output.csv', 'rb') as outfile:
-#     writer = csv.DictWriter(outfile, 
+# Build sets based on mets and somy
+mets_set = set(mets_variants)
+nomets_set = set(nomets_variants)
+monosomy_set = set(monosomy_variants)
+disomy_set = set(disomy_variants)
+
+# Build sets of intersections of mets and somy
+mets_mono = mets_set & monosomy_set
+nomets_mono = nomets_set & monosomy_set
+mets_di = mets_set & disomy_set
+nomets_di = nomets_set & disomy_set
 
 # Various print calls to test output
-
-# for variant in global_variants:
-#     for sample in global_variants[variant]:
-#         print(samples[sample].get_info())
-#         print(samples[sample].get_anno(variant))
-            
-#print("GLOBAL VARIANTS")
-#print set(global_variants)
-#print global_variants.keys()
-
-#print("METS VARIANTS")
-#print set(met_variants)
-
-#print("NOMETS VARIANTS")
-#print set(nomet_variants)
-
-#print("MONOSOMY VARIANTS")
-#print set(monosomy_variants)
-
-#print("DISOMY VARIANTS")
-#print set(disomy_variants)
+# for row in data:
+#     print(row)
+#             
+# print("GLOBAL VARIANTS")
+# for key in sorted(global_variants.keys()):
+#     print global_variants[key]
+# 
+# print("METS VARIANTS")
+# for variant in mets_set:
+#     print variant
+#   
+# print("NOMETS VARIANTS")
+# for variant in nomets_set:
+#     print variant
+#   
+# print("MONOSOMY VARIANTS")
+# for variant in monosomy_set:
+#     print variant
+#   
+# print("DISOMY VARIANTS")
+# for variant in disomy_set:
+#     print variant

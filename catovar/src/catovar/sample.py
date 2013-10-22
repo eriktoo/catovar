@@ -50,6 +50,12 @@ class Sample:
     def get_info_fields(self):
         return self.info_fields
     
+    def get_mets(self):
+        return self.info_dict["metast"]
+    
+    def get_somy(self):
+        return self.info_dict["somy"]
+    
     def get_variant_fields(self):
         return self.variant_fields[0:-1]
 
@@ -73,3 +79,6 @@ class Sample:
         for key in self.variant_fields[0:-1]:
             anno_list.append(self.anno_dict[variant][key])
         return anno_list
+    
+    def get_anno_dict(self, variant):
+        return self.anno_dict[variant]
