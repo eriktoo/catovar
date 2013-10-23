@@ -18,6 +18,12 @@ def output(filename, header, data):
         writer.writerow(header)
         for row in data:
             writer.writerow(row)
+            
+def build_set_anno(variant_set):
+    data = []
+    for variant in variant_set:
+        data.append(global_variants[variant])
+    return data
 
 # Define variables
 samples = []
@@ -87,18 +93,17 @@ for sample in samples:
         v_data.append(other["FDP"])
         v_data.extend(sample.get_anno(variant)[5:]) # get remaining annotation
         data.append(v_data)
-
-output("combined.csv", header, data)
             
 global_variants = {}
-global_anno_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
+set_anno_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
 
+# Initialize partitions of variants
 mets_variants = []
 nomets_variants = []
 monosomy_variants = []
 disomy_variants = []
  
-# Define global variant lookup table
+# Create global variant lookup table
 for sample in samples:
     variants = sample.get_variant_list()
 
@@ -107,12 +112,13 @@ for sample in samples:
             continue
         else:
             anno = sample.get_anno_dict(variant)
-            global_anno = []
-            for field in global_anno_fields:
-                global_anno.append(anno[field])
-            global_variants[variant] = global_anno
+            set_anno = []
+            for field in set_anno_fields:
+                set_anno.append(anno[field])
+            global_variants[variant] = set_anno
             
-# Get sample metastasis and somy status 
+# Get sample metastasis and somy status
+# To exclude blood and cell line wrap this block in "if fna or tumor"
     met_status = sample.get_mets()
     somy_status = sample.get_somy()
 
@@ -141,6 +147,31 @@ mets_mono = mets_set & monosomy_set
 nomets_mono = nomets_set & monosomy_set
 mets_di = mets_set & disomy_set
 nomets_di = nomets_set & disomy_set
+
+# In mets and not in nomets
+mets_xnomets_all =  mets_set - nomets_set
+mets_xnomets_mono = mets_xnomets_all - mets_di
+mets_xnomets_di = mets_xnomets_all - mets_mono
+
+filtered = []
+for line in data:
+    if tuple(line[5:10]) in mets_xnomets_all:
+        filtered.append(line)
+        
+output("combined.csv", header, data)
+output("mets.csv", set_anno_fields, build_set_anno(mets_set))
+output("nomets.csv", set_anno_fields, build_set_anno(nomets_set))
+output("monosomy.csv", set_anno_fields, build_set_anno(monosomy_set))
+output("disomy.csv", set_anno_fields, build_set_anno(disomy_set))
+output("mets_mono.csv", set_anno_fields, build_set_anno(mets_mono))
+output("nomets_mono.csv", set_anno_fields, build_set_anno(nomets_mono))
+output("mets_di.csv", set_anno_fields, build_set_anno(mets_di))
+output("nomets_di.csv", set_anno_fields, build_set_anno(nomets_di))
+output("mets_not_nomets.csv", set_anno_fields, build_set_anno(mets_xnomets_all))
+output("mets_not_nomets_mono.csv", set_anno_fields, build_set_anno(mets_xnomets_mono))
+output("mets_not_nomets_di.csv", set_anno_fields, build_set_anno(mets_xnomets_di))
+output("filtered.csv", header, filtered)
+    
 
 # Various print calls to test output
 # for row in data:
