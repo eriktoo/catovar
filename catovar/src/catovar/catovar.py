@@ -150,27 +150,36 @@ nomets_di = nomets_set & disomy_set
 
 # In mets and not in nomets
 mets_xnomets_all =  mets_set - nomets_set
-mets_xnomets_mono = mets_xnomets_all - mets_di
-mets_xnomets_di = mets_xnomets_all - mets_mono
+mets_xnomets_mono = mets_xnomets_all & monosomy_set
+mets_xnomets_di = mets_xnomets_all & disomy_set
+
+# print len(mets_xnomets_all)
+# print len(mets_xnomets_mono)
+# print len(mets_xnomets_di)
+
+#BUG - Think i fixed - problem is that some vars (10) in di and mono so
+#difference excludes from both. Fixed by using &.
+diff = (mets_xnomets_all - mets_xnomets_mono - mets_xnomets_di)
+output("diff.csv", set_anno_fields, build_set_anno(diff))
 
 filtered = []
 for line in data:
     if tuple(line[5:10]) in mets_xnomets_all:
         filtered.append(line)
         
-output("combined.csv", header, data)
-output("mets.csv", set_anno_fields, build_set_anno(mets_set))
-output("nomets.csv", set_anno_fields, build_set_anno(nomets_set))
-output("monosomy.csv", set_anno_fields, build_set_anno(monosomy_set))
-output("disomy.csv", set_anno_fields, build_set_anno(disomy_set))
-output("mets_mono.csv", set_anno_fields, build_set_anno(mets_mono))
-output("nomets_mono.csv", set_anno_fields, build_set_anno(nomets_mono))
-output("mets_di.csv", set_anno_fields, build_set_anno(mets_di))
-output("nomets_di.csv", set_anno_fields, build_set_anno(nomets_di))
-output("mets_not_nomets.csv", set_anno_fields, build_set_anno(mets_xnomets_all))
-output("mets_not_nomets_mono.csv", set_anno_fields, build_set_anno(mets_xnomets_mono))
-output("mets_not_nomets_di.csv", set_anno_fields, build_set_anno(mets_xnomets_di))
-output("filtered.csv", header, filtered)
+# output("combined.csv", header, data)
+# output("mets.csv", set_anno_fields, build_set_anno(mets_set))
+# output("nomets.csv", set_anno_fields, build_set_anno(nomets_set))
+# output("monosomy.csv", set_anno_fields, build_set_anno(monosomy_set))
+# output("disomy.csv", set_anno_fields, build_set_anno(disomy_set))
+# output("mets_mono.csv", set_anno_fields, build_set_anno(mets_mono))
+# output("nomets_mono.csv", set_anno_fields, build_set_anno(nomets_mono))
+# output("mets_di.csv", set_anno_fields, build_set_anno(mets_di))
+# output("nomets_di.csv", set_anno_fields, build_set_anno(nomets_di))
+# output("mets_not_nomets.csv", set_anno_fields, build_set_anno(mets_xnomets_all))
+# output("mets_not_nomets_mono.csv", set_anno_fields, build_set_anno(mets_xnomets_mono))
+# output("mets_not_nomets_di.csv", set_anno_fields, build_set_anno(mets_xnomets_di))
+# output("filtered.csv", header, filtered)
     
 
 # Various print calls to test output
