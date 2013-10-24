@@ -28,9 +28,10 @@ class Sample:
             # Store dict describing each variant in anno_dict{}
             for variant in variant_dict_reader:
                 # Variants are keyed by tuple of first 5 values
+                variant["Chr"] = variant["Chr"].lstrip("chr")
                 key_list = []
-                for index in self.variant_fields[0:5]:
-                    key_list.append(variant[index])
+                for field in self.variant_fields[0:5]:
+                    key_list.append(variant[field])
                 key = tuple(key_list)
                 # otherinfo is a tab delim field of vcf data
                 # It must be parse to be useful. The first step is to append
