@@ -169,7 +169,7 @@ nomets_xmets_all =  nomets_set - mets_set
 mets_and_nomets = mets_set & nomets_set
 
 # Generate output files
-# output("combined.csv", header, all_data)
+output("all_variants.csv", header, all_data)
 # output("mets.csv", set_anno_fields, build_set_anno(mets_set))
 # output("nomets.csv", set_anno_fields, build_set_anno(nomets_set))
 # output("monosomy.csv", set_anno_fields, build_set_anno(monosomy_set))
