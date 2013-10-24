@@ -11,19 +11,28 @@ import sys
 
 # Define functions
 
-# Write list 'data' into csv called 'filename' with fields from 'header'
-def output(filename, header, data):
+# Write list 'all_data' into csv called 'filename' with fields from 'header'
+def output(filename, header, all_data):
     with open(filename, 'wb') as out_csv:
         writer = csv.writer(out_csv, dialect='excel')
         writer.writerow(header)
-        for row in data:
+        for row in all_data:
             writer.writerow(row)
             
 def build_set_anno(variant_set):
-    data = []
+    all_data = []
     for variant in variant_set:
-        data.append(global_variants[variant])
-    return data
+        all_data.append(global_variants[variant])
+    return all_data
+
+
+def filtered_output(variant_set):
+    filtered = []
+    for line in all_data:
+        if tuple(line[5:10]) in variant_set:
+            filtered.append(line)
+    
+    return filtered
 
 # Define variables
 samples = []
@@ -42,10 +51,10 @@ anno_fields.extend(["Zyg", "GQ", "Freq", "Alt", "% Alt+", "% Alt-", "Ref", "Dept
 anno_fields.extend(samples[0].get_variant_fields()[5:])
 header = samples[0].get_info_fields() + anno_fields
 
-data = [] # list to hold lists of variant data
+all_data = [] # list to hold lists of variant all_data
 for sample in samples:
     for variant in sample.get_variant_list():
-        v_data = [] # initialize list to line of data for variant
+        v_data = [] # initialize list to line of all_data for variant
         other = sample.get_vcf_info(variant) # get dict holding GT:GQ:DP... (vcf form)
         v_data.extend(sample.get_info()) # get sample information
         v_data.extend(sample.get_anno(variant)[0:5]) # get first 5 anno fields
@@ -92,7 +101,7 @@ for sample in samples:
         v_data.append(other["FRO"])
         v_data.append(other["FDP"])
         v_data.extend(sample.get_anno(variant)[5:]) # get remaining annotation
-        data.append(v_data)
+        all_data.append(v_data)
             
 global_variants = {}
 set_anno_fields = ["Chr", "Start", "End", "Ref", "Alt", "Func.refGene", "Gene.refGene", "ExonicFunc.refGene", "AAChange.refGene", "1000g2012apr_all", "snp132", "cosmic65"]
@@ -150,24 +159,17 @@ nomets_di = nomets_set & disomy_set
 
 # In mets and not in nomets
 mets_xnomets_all =  mets_set - nomets_set
-mets_xnomets_mono = mets_xnomets_all & monosomy_set
-mets_xnomets_di = mets_xnomets_all & disomy_set
+# mets_xnomets_mono = mets_xnomets_all & monosomy_set
+# mets_xnomets_di = mets_xnomets_all & disomy_set
 
-# print len(mets_xnomets_all)
-# print len(mets_xnomets_mono)
-# print len(mets_xnomets_di)
+# In nomets and not in mets
+nomets_xmets_all =  nomets_set - mets_set
 
-#BUG - Think i fixed - problem is that some vars (10) in di and mono so
-#difference excludes from both. Fixed by using &.
-diff = (mets_xnomets_all - mets_xnomets_mono - mets_xnomets_di)
-output("diff.csv", set_anno_fields, build_set_anno(diff))
+# In both mets AND nomets
+mets_and_nomets = mets_set & nomets_set
 
-filtered = []
-for line in data:
-    if tuple(line[5:10]) in mets_xnomets_all:
-        filtered.append(line)
-        
-# output("combined.csv", header, data)
+# Generate output files
+# output("combined.csv", header, all_data)
 # output("mets.csv", set_anno_fields, build_set_anno(mets_set))
 # output("nomets.csv", set_anno_fields, build_set_anno(nomets_set))
 # output("monosomy.csv", set_anno_fields, build_set_anno(monosomy_set))
@@ -176,14 +178,34 @@ for line in data:
 # output("nomets_mono.csv", set_anno_fields, build_set_anno(nomets_mono))
 # output("mets_di.csv", set_anno_fields, build_set_anno(mets_di))
 # output("nomets_di.csv", set_anno_fields, build_set_anno(nomets_di))
-# output("mets_not_nomets.csv", set_anno_fields, build_set_anno(mets_xnomets_all))
+output("mets_not_nomets.csv", set_anno_fields, build_set_anno(mets_xnomets_all))
 # output("mets_not_nomets_mono.csv", set_anno_fields, build_set_anno(mets_xnomets_mono))
 # output("mets_not_nomets_di.csv", set_anno_fields, build_set_anno(mets_xnomets_di))
-# output("filtered.csv", header, filtered)
-    
+output("nomets_not_mets.csv", set_anno_fields, build_set_anno(nomets_xmets_all))
+output("mets_and_nomets.csv", set_anno_fields, build_set_anno(mets_and_nomets))
+output("filtered_mets.csv", header, filtered_output(mets_xnomets_all))
+output("filtered_nomets.csv", header, filtered_output(nomets_xmets_all))
+output("filtered_both.csv", header, filtered_output(mets_and_nomets))
+
+
+# For testing purposes
+
+# Check the sizes of the mets/nomets sets
+# print len(mets_xnomets_all)
+# print len(nomets_xmets_all)
+# print len(mets_set)
+# print len(nomets_set)
+# print len(mets_and_nomets)
+# print len(global_variants.keys())
+
+# Resolved
+# BUG - Think i fixed - problem is that some vars (10) in di and mono so
+# difference excludes from both. Fixed by using &.
+# diff = (mets_xnomets_all - mets_xnomets_mono - mets_xnomets_di)
+# output("diff.csv", set_anno_fields, build_set_anno(diff))
 
 # Various print calls to test output
-# for row in data:
+# for row in all_data:
 #     print(row)
 #             
 # print("GLOBAL VARIANTS")
